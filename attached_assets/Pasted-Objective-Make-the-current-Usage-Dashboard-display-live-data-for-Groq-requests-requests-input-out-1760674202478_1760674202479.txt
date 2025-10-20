@@ -1,0 +1,128 @@
+Objective
+
+Make the current Usage Dashboard display live data for Groq requests: requests, input/output tokens, latency, errors, and cost. Works for streaming and non-streaming.
+
+⸻
+
+What to capture (per request)
+
+Record one analytics event for every Groq call (chat/completions, tools, transcription):
+	•	timestamp
+	•	provider = groq
+	•	model (e.g., llama-3…)
+	•	org/workspace id, project id, user id
+	•	expert id & template id (if any)
+	•	request id (unique)
+	•	status (success/error) and error code/message
+	•	input_tokens, output_tokens, total_tokens
+	•	latency_ms (start → final token/byte)
+	•	cost_usd (see below)
+	•	tokens_estimated (true/false)
+
+If Groq doesn’t return token counts for a call, estimate tokens (mark tokens_estimated=true).
+
+⸻
+
+Cost model (editable, not hard-coded)
+	•	Add an Admin pricing table for Groq with fields:
+	•	provider, model, input_usd_per_1k_tokens, output_usd_per_1k_tokens, enabled
+	•	Cost formula per request:
+cost_usd = (input_tokens / 1000) * input_price + (output_tokens / 1000) * output_price
+	•	Capture cost at the time of the request (no retroactive recalculation needed).
+
+⸻
+
+Where to hook (high level)
+	1.	Before sending a Groq request: create a request_id, mark start time.
+	2.	After completion/stream end (or on error): compute latency, read/estimate tokens, compute cost, write one analytics row.
+	3.	Ensure the same recorder runs for both streaming and non-streaming paths.
+
+⸻
+
+Estimating tokens (when Groq doesn’t return them)
+	•	If the Groq response includes usage counts, use them.
+	•	Otherwise:
+	•	Estimate input tokens from the serialized prompt/messages.
+	•	Estimate output tokens from the final assistant text.
+	•	Mark tokens_estimated=true.
+
+(Keep the estimator simple and consistent; accuracy within ~5–10% is fine for dashboards.)
+
+⸻
+
+RBAC visibility
+	•	Super Admin: can see all orgs; can edit Groq pricing; can export CSV.
+	•	Admin: sees their org’s data; can’t edit pricing.
+	•	User: sees own usage only; no cost unless an org toggle “show user cost” is on.
+
+⸻
+
+Wire the current dashboard
+
+Use the dashboard that already shows Total Tokens / Total Cost / Messages / Top Model / Usage trend / Usage by model and connect it to the analytics data:
+
+Filters
+	•	Date range (Last 7 days, 30 days, All time, custom)
+	•	Provider default = Groq
+	•	Model, Project, User, Expert, Template, Status
+
+Summary cards
+	•	Total Tokens (sum of total_tokens)
+	•	Total Cost (sum of cost_usd)
+	•	Messages/Requests (count of events)
+	•	Avg Latency (avg latency_ms)
+	•	Error Rate (errors / total)
+
+Charts
+	•	Cost over time (by day/hour)
+	•	Tokens over time
+	•	Requests + Error Rate
+
+Tables
+	•	Breakdown by Model, Project, User, Expert/Template (requests, tokens, cost, avg latency, error rate)
+	•	“Export CSV” uses current filters
+
+⸻
+
+Admin → Pricing screen
+	•	List Groq models with editable input $/1k and output $/1k.
+	•	Buttons: Edit Pricing, Save Pricing.
+	•	Changes apply to new requests only.
+
+⸻
+
+Acceptance criteria (must pass)
+	1.	After making several Groq requests, Last 7 days shows non-zero Tokens, Cost, Requests.
+	2.	Cost reflects pricing table values; changing a price affects new requests only.
+	3.	Filters (Project/User/Model/Status) update all cards/charts/tables consistently.
+	4.	CSV export downloads the filtered dataset.
+	5.	RBAC respected: Super Admin sees all + pricing editor; Admin sees org only; User sees own usage (and cost only if org toggle enabled).
+	6.	Streaming requests are recorded once per completion with correct tokens/latency.
+	7.	Mobile view renders all cards and charts without overflow; tables scroll horizontally on small screens.
+	8.	Friendly error states: “We couldn’t load analytics. Please try again.”
+
+⸻
+
+Copy (use exactly)
+	•	Tabs: Analytics, Pricing
+	•	Cards: Total Tokens, Total Cost, Messages, Avg Latency, Error Rate
+	•	Buttons: Export CSV, Edit Pricing, Save Pricing
+	•	Empty: “No usage recorded for this range.”
+
+⸻
+
+Quick test script (manual)
+	1.	Run 3 chats on Groq: short, long, and one forced error.
+	2.	Open Analytics → Last 7 days: see Tokens/Cost/Requests > 0; one error counted.
+	3.	Change pricing for the model; send another chat; confirm new cost reflects the new rate.
+	4.	Filter by the Project you used: charts and tables update; export CSV reflects the filter.
+	5.	Log in as a User: see only your rows; cost hidden (unless toggle on).
+	6.	Mobile: scroll page; cards and tables are readable and not cut off.
+
+⸻
+
+Deliverables:
+	•	Recorder hooked to Groq calls (streaming + non-streaming).
+	•	Analytics events persisted.
+	•	Pricing editor for Groq.
+	•	Dashboard wired to this data with filters/exports.
