@@ -4,6 +4,16 @@
 This project is a modern ChatGPT-like web application providing an AI chat interface with a dark-mode-first design, sidebar for chat management, and a central conversation area. It supports multiple AI models and features a full-stack architecture with a React frontend, Express backend, and PostgreSQL for data persistence. Key capabilities include user authentication, a Pro plan for unlimited access, a personalized knowledge base, isolated project workspaces, and advanced AI model features like web search and code interpretation. The vision is to offer a comprehensive and customizable AI interaction platform.
 
 ## Recent Changes
+### October 20, 2025 - Production Deployment Database Fix
+Fixed database connection issues for production deployments:
+- **Issue**: App crashed in production with "getaddrinfo EAI_AGAIN helium" error because DATABASE_URL pointed to local development database hostname
+- **Root Cause**: Neon serverless driver required WebSocket connections incompatible with Replit's PostgreSQL database
+- **Driver Migration**: Switched from `@neondatabase/serverless` to standard `pg` (node-postgres) driver for compatibility with Replit's PostgreSQL
+- **Production URL Handling**: Updated db.ts to check `/tmp/replitdb` file first (where Replit stores production DATABASE_URL), then fall back to environment variable
+- **SSL Configuration**: Added automatic SSL detection based on connection string (enables SSL for Neon databases, disables for local Replit database)
+- **Migration System**: Updated migrations.ts to use `drizzle-orm/node-postgres/migrator` instead of neon-serverless migrator
+- **Result**: Application now works seamlessly in both development (local Replit database) and production (any PostgreSQL database including Neon)
+
 ### October 19, 2025 - Critical TDZ Error Fix
 Fixed critical "Cannot access uninitialized variable" error preventing user-side app from loading:
 - **Root Cause**: The scrollMessagesToBottom function was being used in useEffect hooks but created a closure that captured the `messages` variable
@@ -116,7 +126,7 @@ Exclusive to Enterprise plan users, the Teams feature enables organizational col
 - React 18, Express.js, TypeScript, Vite.
 
 ### Database & ORM
-- @neondatabase/serverless, Drizzle ORM, Drizzle Kit, connect-pg-simple.
+- pg (node-postgres), Drizzle ORM, Drizzle Kit, connect-pg-simple.
 
 ### UI Framework & Components
 - @radix-ui/, Tailwind CSS, class-variance-authority, clsx, tailwind-merge.
