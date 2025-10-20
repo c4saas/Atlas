@@ -10,6 +10,20 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 app.use(cookieParser());
 
+// Health check endpoint - responds immediately for Autoscale health checks
+let isReady = false;
+let initError: Error | null = null;
+
+app.get('/health', (_req: Request, res: Response) => {
+  if (initError) {
+    res.status(503).json({ status: 'error', message: initError.message });
+  } else if (isReady) {
+    res.status(200).json({ status: 'ok' });
+  } else {
+    res.status(200).json({ status: 'initializing' });
+  }
+});
+
 // Session middleware is configured in localAuth.ts via setupAuth()
 
 app.use((req, res, next) => {
@@ -26,11 +40,11 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  let server: any;
+  
   try {
-    await runMigrations();
-    await verifyDatabaseConnection();
-    await ensureActiveReleaseHasTemplates();
-    const server = await registerRoutes(app);
+    // Register routes first (without waiting for DB)
+    server = await registerRoutes(app);
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
@@ -56,6 +70,8 @@ app.use((req, res, next) => {
     // this serves both the API and the client.
     // It is the only port that is not firewalled.
     const port = parseInt(process.env.PORT || "5000", 10);
+    
+    // Start listening IMMEDIATELY - critical for Autoscale health checks
     server.listen(
       {
         port,
@@ -66,6 +82,23 @@ app.use((req, res, next) => {
         log(`serving on port ${port}`);
       },
     );
+
+    // Run expensive initialization in background after server is listening
+    (async () => {
+      try {
+        log('Starting background initialization...');
+        await runMigrations();
+        await verifyDatabaseConnection();
+        await ensureActiveReleaseHasTemplates();
+        isReady = true;
+        log('Background initialization complete - server ready');
+      } catch (error) {
+        initError = error as Error;
+        log(`Background initialization failed: ${(error as Error).message}`);
+        // Don't exit - let health check report the error
+      }
+    })();
+
   } catch (error) {
     console.error("Failed to start Atlas AI server:", error);
     process.exit(1);

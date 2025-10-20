@@ -4845,17 +4845,6 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async getUserTeams(userId: string): Promise<Team[]> {
-    // Get teams where user is a member
-    const memberTeams = await db
-      .select({ team: teams })
-      .from(teamMembers)
-      .innerJoin(teams, eq(teamMembers.teamId, teams.id))
-      .where(and(eq(teamMembers.userId, userId), eq(teamMembers.status, 'active')));
-    
-    return memberTeams.map(row => row.team);
-  }
-
   async getTeamsByOwner(ownerId: string): Promise<Team[]> {
     return await db.select().from(teams).where(eq(teams.ownerId, ownerId));
   }

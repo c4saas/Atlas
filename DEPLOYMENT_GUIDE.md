@@ -2,6 +2,31 @@
 
 This guide explains how to successfully deploy your application to production on Replit, including configuring all necessary secrets and environment variables.
 
+## Recent Deployment Fixes (October 20, 2025)
+
+Your application has been optimized for production deployment with the following critical fixes:
+
+### 1. Fast Startup for Autoscale Health Checks
+- **Issue**: Server took too long to open port 5000, failing Autoscale health checks
+- **Fix**: Server now starts listening on port 5000 **immediately**, then runs database migrations and initialization in the background
+- **Result**: Deployment health checks pass quickly, preventing timeout errors
+
+### 2. Production Migrations Enabled
+- **Issue**: Migrations were skipped in production (REPLIT_DEPLOYMENT check)
+- **Fix**: Removed the production skip - migrations now run in all environments
+- **Result**: Database schema is properly initialized in production deployments
+
+### 3. Health Check Endpoint
+- **New Feature**: `/health` endpoint added for deployment monitoring
+- **Statuses**:
+  - `{"status": "initializing"}` - Server is running, background init in progress
+  - `{"status": "ok"}` - Server fully ready
+  - `{"status": "error", "message": "..."}` - Initialization failed
+
+### 4. Code Quality Fixes
+- **Fixed**: Removed duplicate `getUserTeams` method that caused build warnings
+- **Result**: Cleaner build output, no runtime conflicts
+
 ## Database Configuration
 
 ### How DATABASE_URL Works in Production

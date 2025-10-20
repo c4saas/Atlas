@@ -138,11 +138,6 @@ export async function runMigrations(): Promise<void> {
     return;
   }
 
-  if (process.env.REPLIT_DEPLOYMENT) {
-    log("REPLIT_DEPLOYMENT detected; skipping migrations in production", MIGRATIONS_SCOPE);
-    return;
-  }
-
   if (!process.env.DATABASE_URL) {
     log("DATABASE_URL is not set; skipping migrations", MIGRATIONS_SCOPE);
     return;
