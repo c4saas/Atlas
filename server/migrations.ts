@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { migrate } from "drizzle-orm/neon-serverless/migrator";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
 
 import { db, pool } from "./db";
 import { log } from "./vite";
