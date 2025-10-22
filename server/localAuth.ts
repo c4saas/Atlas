@@ -2,6 +2,7 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
+import bcrypt from "bcryptjs";
 import type { Express, RequestHandler } from "express";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
@@ -74,7 +75,6 @@ export async function setupAuth(app: Express) {
             return done(null, false, { message: "Invalid email/username or password" });
           }
 
-          const bcrypt = await import("bcryptjs");
           if (!user.password) {
             return done(null, false, { message: "Password authentication is not enabled for this account" });
           }
