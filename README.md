@@ -59,6 +59,10 @@ Run unit tests covering the security changes:
 npm test
 ```
 
+## Vercel Deployment
+- This repo includes a Vercel Serverless Function that runs the existing Express API under `/api/*` and serves the Vite UI as static assets.
+- See `docs/VERCEL_DEPLOY.md` for step‑by‑step setup (build/output settings and required environment variables).
+
 ## Notes
 - File uploads and downloads require an authenticated session, validate ownership before serving content, and now enforce tighter file-size limits to protect memory.
 - Upload-heavy routes are protected by rate limiting, per-user quotas, and CSRF validation to reduce abuse and cross-site attacks.

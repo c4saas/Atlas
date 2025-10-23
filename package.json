@@ -13,6 +13,7 @@
     "migration:summary": "tsx scripts/summarize-production-migration.ts",
     "db:push": "drizzle-kit push",
     "seed:super-admin": "tsx scripts/seed-super-admin.ts",
+    "seed:user": "tsx scripts/seed-user.ts",
     "lint:cycles": "tsx scripts/scan-circular-imports.ts",
     "madge": "tsx scripts/madge-shim.ts --circular",
     "validate:release": "tsx scripts/validate-release.ts"
