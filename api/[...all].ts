@@ -1,10 +1,46 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import express from "express";
+import cookieParser from "cookie-parser";
 
-// Minimal catch-all API for Vercel.
-// Note: The full Express app is intentionally not mounted here to avoid
-// type-check/build failures unrelated to the health check endpoint.
-// Specific endpoints should be implemented as standalone files in /api.
+// Reuse the existing Express routes from the server codebase
+import { registerRoutes } from "../server/routes";
 
-export default async function handler(_req: VercelRequest, res: VercelResponse) {
-  res.status(404).json({ message: "API route not implemented. Use /api/health." });
+let app: ReturnType<typeof express> | null = null;
+let initPromise: Promise<void> | null = null;
+
+async function initApp() {
+  if (app) return;
+
+  const instance = express();
+  instance.use(express.json({ limit: "10mb" }));
+  instance.use(express.urlencoded({ extended: false, limit: "10mb" }));
+  instance.use(cookieParser());
+
+  // Mount all API routes and middleware
+  await registerRoutes(instance);
+
+  app = instance;
+  console.log("Vercel serverless API initialized");
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (!initPromise) {
+    initPromise = initApp().catch((err) => {
+      // Surface initialization failures once, then allow subsequent requests to retry init
+      initPromise = null;
+      console.error("Failed to initialize serverless API:", err);
+      // Best-effort error response
+      res.status(500).json({ message: "API initialization failed", detail: (err as Error)?.message });
+    }) as Promise<void>;
+  }
+
+  // Ensure the app is ready before handling the request
+  await initPromise;
+  if (!app) {
+    // If initialization failed above, app might still be null
+    return; // response already sent with error
+  }
+
+  // Delegate handling to the Express app
+  (app as any)(req, res);
 }
