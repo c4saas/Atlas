@@ -3,6 +3,8 @@ import cookieParser from "cookie-parser";
 import { registerRoutes } from "../server/routes";
 import { runMigrations, verifyDatabaseConnection } from "../server/migrations";
 import { ensureActiveReleaseHasTemplates } from "../server/release-init";
+import { storage as defaultStorage } from "../server/storage";
+import { ensureSupportUserFromEnv } from "../server/bootstrap";
 
 // Build a single Express app instance for this serverless function runtime.
 // Vercel invokes this handler per request; the app is initialized once per lambda
@@ -66,6 +68,8 @@ async function initOnce() {
       await runMigrations();
       await verifyDatabaseConnection();
       await ensureActiveReleaseHasTemplates();
+      // Optionally bootstrap a support user if env vars are provided
+      await ensureSupportUserFromEnv(defaultStorage);
       isReady = true;
     } catch (err) {
       initError = err as Error;
@@ -83,4 +87,3 @@ export default async function handler(req: Request, res: Response) {
   await initOnce();
   return app(req, res);
 }
-

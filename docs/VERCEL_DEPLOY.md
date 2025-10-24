@@ -39,7 +39,9 @@ Notes:
 - All API requests go to the serverless Express app via `api/[...all].ts`:
   - Examples: `/api/auth/login`, `/api/chats`, `/api/knowledge/*`, etc.
 - Health check:
-  - `/api/health` returns `{ status: "ok" }` (fast, no DB work)
+  - `/api/health` verifies DB when `DATABASE_URL` is set and returns `{ status: "ok", now }`.
+  - If `DATABASE_URL` is not set, it returns `{ status: "ok" }`.
+  - On DB connection errors, it responds `503` with `{ status: "error" }`.
 
 ## Local Development
 
@@ -58,4 +60,3 @@ Notes:
 - 500 on API routes: Verify `SESSION_SECRET` and `DATABASE_URL` are set in Vercel.
 - DB/migration issues: Check logs; set `SKIP_DB_MIGRATIONS=true` temporarily if needed, then run migrations manually and unset.
 - Large uploads: Vercel serverless has request size limits; consider signed URLs to S3 if you hit limits.
-
