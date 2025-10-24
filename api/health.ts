@@ -1,15 +1,20 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { Pool } from "pg";
+import { EMBEDDED_DATABASE_URL } from "../server/db-embedded";
 
 // Create the pool lazily so the function doesn't crash
 // if DATABASE_URL is missing in the environment.
 let pool: Pool | null = null;
 function getPool(): Pool | null {
-  const url = process.env.DATABASE_URL;
+  const url = (process.env.DATABASE_URL || EMBEDDED_DATABASE_URL || "").trim();
   if (!url) return null;
   if (!pool) {
-    const ssl = url.includes("neon.tech") || url.includes("sslmode=require");
-    pool = new Pool({ connectionString: url, ssl });
+    const ssl = url.includes("neon.tech")
+      ? true
+      : url.includes("sslmode=require")
+        ? { rejectUnauthorized: false }
+        : undefined;
+    pool = new Pool({ connectionString: url, ssl: ssl as any });
   }
   return pool;
 }
