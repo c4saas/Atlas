@@ -110,7 +110,7 @@ export class AIService {
     projectId?: string | null;
     expertId?: string | null;
     templateId?: string | null;
-    provider: string;
+    provider: 'openai' | 'anthropic' | 'groq' | 'perplexity' | 'compound';
     model: string;
     status: 'success' | 'error';
     errorCode?: string;

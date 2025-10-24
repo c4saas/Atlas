@@ -1206,13 +1206,13 @@ export type InvitationStatus = z.infer<typeof invitationStatusSchema>;
 export type InsertTeamInvitation = z.infer<typeof insertTeamInvitationSchema>;
 export type TeamInvitation = typeof teamInvitations.$inferSelect;
 export type TeamSettings = z.infer<typeof teamSettingsSchema>;
-export type EffectiveCapabilities = z.infer<typeof effectiveCapabilitiesSchema>;
+// duplicate export avoided above; keeping single canonical export near table/type defs
 export type InsertUserPreferences = z.infer<typeof insertUserPreferencesSchema>;
 export type UserPreferences = typeof userPreferences.$inferSelect;
 export type InsertUserApiKey = z.infer<typeof insertUserApiKeySchema>;
 export type UserApiKey = typeof userApiKeys.$inferSelect;
 export type InsertKnowledgeItem = z.infer<typeof insertKnowledgeItemSchema>;
-export type KnowledgeItem = typeof knowledgeItems.$inferSelect;
+// duplicate export avoided above; keeping canonical export earlier
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type Project = typeof projects.$inferSelect;
 export type InsertProjectKnowledge = z.infer<typeof insertProjectKnowledgeSchema>;
@@ -1294,7 +1294,9 @@ export const apiProviderSchema = z.enum(['openai', 'anthropic', 'groq', 'perplex
 export type ApiProvider = z.infer<typeof apiProviderSchema>;
 
 // AI Model Configuration
-export type ModelProvider = 'OpenAI' | 'Anthropic' | 'Groq' | 'Perplexity';
+// Use the lowercase provider union defined above via zod
+// (groq | openai | anthropic | perplexity)
+// Avoid redefining ModelProvider to prevent duplicate identifier errors.
 
 export type ModelCapability = 'chat' | 'vision' | 'audio' | 'search' | 'thinking' | 'code';
 export type ModelStatus = 'current' | 'legacy';
@@ -1303,7 +1305,7 @@ export interface AIModel {
   id: string;
   name: string;
   description: string;
-  provider: ModelProvider;
+  provider: ModelProvider; // lowercase provider id
   capabilities: ModelCapability[];
   maxTokens?: number;
   costPer1kTokens?: {
@@ -1319,7 +1321,7 @@ export const AI_MODELS: AIModel[] = [
     id: 'gpt-5',
     name: 'GPT-5',
     description: 'OpenAI flagship model for deep reasoning, code, and multimodal tasks',
-    provider: 'OpenAI',
+    provider: 'openai',
     capabilities: ['chat', 'vision', 'search', 'thinking', 'code'],
     maxTokens: 200000,
   },
@@ -1327,7 +1329,7 @@ export const AI_MODELS: AIModel[] = [
     id: 'gpt-5-mini',
     name: 'GPT-5 Mini',
     description: 'Compact GPT-5 variant optimized for speed and cost efficiency',
-    provider: 'OpenAI',
+    provider: 'openai',
     capabilities: ['chat', 'search', 'code'],
     maxTokens: 128000,
   },
@@ -1336,7 +1338,7 @@ export const AI_MODELS: AIModel[] = [
     id: 'claude-4.5-sonnet',
     name: 'Claude 4.5 Sonnet',
     description: 'Claude Sonnet tuned for balanced quality with web search and coding support',
-    provider: 'Anthropic',
+    provider: 'anthropic',
     capabilities: ['chat', 'vision', 'search', 'thinking', 'code'],
     maxTokens: 200000,
   },
@@ -1346,7 +1348,7 @@ export const AI_MODELS: AIModel[] = [
     id: 'compound',
     name: 'Titan-V',
     description: "Atlas' flagship model that blends fast inference with autonomous research, web tools, and code execution.",
-    provider: 'Groq',
+    provider: 'groq',
     capabilities: ['chat', 'search', 'code'],
     maxTokens: 32768,
   },
@@ -1356,7 +1358,7 @@ export const AI_MODELS: AIModel[] = [
     id: 'sonar-deep-research',
     name: 'Sonar Deep Research',
     description: 'Perplexity multi-hop research model with web search',
-    provider: 'Perplexity',
+    provider: 'perplexity',
     capabilities: ['chat', 'search', 'thinking'],
     maxTokens: 4096,
   },
@@ -1364,7 +1366,7 @@ export const AI_MODELS: AIModel[] = [
     id: 'sonar-pro',
     name: 'Sonar Pro',
     description: 'Perplexity live web search model for quick factual answers',
-    provider: 'Perplexity',
+    provider: 'perplexity',
     capabilities: ['chat', 'search'],
     maxTokens: 4096,
   },
@@ -1374,7 +1376,7 @@ export const AI_MODELS: AIModel[] = [
     id: 'gpt-4.1-mini',
     name: 'GPT-4.1 Mini',
     description: 'Early GPT-4.1 preview model maintained for compatibility',
-    provider: 'OpenAI',
+    provider: 'openai',
     capabilities: ['chat', 'vision', 'code'],
     maxTokens: 128000,
     status: 'legacy',
@@ -1383,7 +1385,7 @@ export const AI_MODELS: AIModel[] = [
     id: 'gpt-4o-mini',
     name: 'GPT-4o Mini',
     description: 'Legacy GPT-4o lightweight variant',
-    provider: 'OpenAI',
+    provider: 'openai',
     capabilities: ['chat', 'search', 'code'],
     maxTokens: 128000,
     status: 'legacy',
@@ -1392,7 +1394,7 @@ export const AI_MODELS: AIModel[] = [
     id: 'llama-3.1-8b-instant',
     name: 'Vega-3',
     description: 'Legacy high-speed inference model optimized for rapid responses',
-    provider: 'Groq',
+    provider: 'groq',
     capabilities: ['chat'],
     maxTokens: 32768,
     status: 'legacy',

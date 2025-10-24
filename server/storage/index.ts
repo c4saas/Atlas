@@ -1207,6 +1207,7 @@ export class MemStorage implements IStorage {
       id: 'free',
       name: 'Free',
       slug: 'free',
+      tier: 'free',
       description: 'Fallback free plan',
       allowExperts: false,
       allowTemplates: false,
@@ -2931,6 +2932,24 @@ export class DatabaseStorage implements IStorage {
     return parsed;
   }
 
+  private normalizeIdList(ids?: string[] | null): string[] {
+    if (!ids) {
+      return [];
+    }
+    const unique = new Set<string>();
+    const normalized: string[] = [];
+    for (const rawId of ids) {
+      if (typeof rawId !== 'string') continue;
+      const trimmed = rawId.trim();
+      if (!trimmed) continue;
+      if (!unique.has(trimmed)) {
+        unique.add(trimmed);
+        normalized.push(trimmed);
+      }
+    }
+    return normalized;
+  }
+
   // Plan methods
   async createPlan(plan: InsertPlan): Promise<Plan> {
     const normalizedSlug = this.normalizePlanSlug(plan.slug) ?? this.normalizePlanSlug(plan.name);
@@ -3774,17 +3793,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async listN8nAgentRuns(agentId: string, limit?: number): Promise<N8nAgentRun[]> {
-    let query = db
+    let builder = db
       .select()
       .from(n8nAgentRuns)
-      .where(eq(n8nAgentRuns.agentId, agentId))
-      .orderBy(desc(n8nAgentRuns.createdAt));
+      .where(eq(n8nAgentRuns.agentId, agentId));
 
     if (typeof limit === 'number' && Number.isFinite(limit) && limit >= 0) {
-      query = query.limit(Math.floor(limit));
+      builder = builder.limit(Math.floor(limit));
     }
 
-    return await query;
+    return await builder.orderBy(desc(n8nAgentRuns.createdAt));
   }
 
   // File methods
@@ -4648,17 +4666,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async listAdminAuditLogsForUser(userId: string, limit?: number): Promise<AdminAuditLog[]> {
-    let query = db
+    let builder = db
       .select()
       .from(adminAuditLogs)
-      .where(eq(adminAuditLogs.targetUserId, userId))
-      .orderBy(desc(adminAuditLogs.createdAt));
+      .where(eq(adminAuditLogs.targetUserId, userId));
 
     if (typeof limit === 'number') {
-      query = query.limit(Math.max(0, limit));
+      builder = builder.limit(Math.max(0, limit));
     }
 
-    return await query;
+    return await builder.orderBy(desc(adminAuditLogs.createdAt));
   }
 
   async getAdminAuditLogs(filters?: {
@@ -4691,20 +4708,19 @@ export class DatabaseStorage implements IStorage {
       conditions.push(lte(adminAuditLogs.createdAt, filters.endDate));
     }
 
-    let query = db
+    let builder = db
       .select()
-      .from(adminAuditLogs)
-      .orderBy(desc(adminAuditLogs.createdAt));
+      .from(adminAuditLogs);
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      builder = builder.where(and(...conditions));
     }
 
     if (filters?.limit && filters.limit > 0) {
-      query = query.limit(filters.limit);
+      builder = builder.limit(filters.limit);
     }
 
-    return await query;
+    return await builder.orderBy(desc(adminAuditLogs.createdAt));
   }
 
   // Analytics event methods
@@ -4862,9 +4878,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateTeam(id: string, updates: Partial<InsertTeam>): Promise<Team | undefined> {
+    const payload: Partial<typeof teams.$inferInsert> = { updatedAt: new Date() };
+    if (typeof updates.name === 'string') payload.name = updates.name;
+    if (typeof updates.ownerId === 'string') payload.ownerId = updates.ownerId;
+    if (updates.description === null) payload.description = null;
+    else if (typeof updates.description === 'string') payload.description = updates.description;
+    if (updates.settings === null) payload.settings = null as any;
+    else if (typeof updates.settings === 'object') {
+      payload.settings = updates.settings as { customInstructions?: string; storageQuotaMb?: number; apiUsageLimit?: number };
+    }
+
     const [result] = await db
       .update(teams)
-      .set({ ...updates, updatedAt: new Date() })
+      .set(payload)
       .where(eq(teams.id, id))
       .returning();
     return result;

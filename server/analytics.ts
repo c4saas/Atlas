@@ -94,7 +94,7 @@ export class AnalyticsTracker {
       const event: InsertAnalyticsEvent = {
         requestId: nanoid(16),
         userId,
-        provider: 'system',
+        provider: 'compound',
         model: 'feature_gate',
         status: 'error',
         errorCode: 'FEATURE_BLOCKED',
@@ -141,7 +141,7 @@ export class AnalyticsTracker {
       const event: InsertAnalyticsEvent = {
         requestId: nanoid(16),
         userId,
-        provider: 'system',
+        provider: 'compound',
         model: 'feature_usage',
         status: 'success',
         inputTokens: 0,
@@ -243,7 +243,7 @@ export class AnalyticsTracker {
         startDate,
         endDate,
         userId,
-        provider: 'system', // Filter for feature tracking events
+        provider: 'compound', // Use synthetic provider bucket for system events
       });
 
       const stats = {

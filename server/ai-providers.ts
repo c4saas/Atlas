@@ -441,22 +441,22 @@ export async function callAIProvider(request: ChatCompletionRequest): Promise<Ch
 
   // Check if required API key is available for the provider
   switch (model.provider) {
-    case 'OpenAI':
+    case 'openai':
       if (!process.env.OPENAI_API_KEY) {
         throw new Error('OpenAI API key is required but not configured');
       }
       return callOpenAI(validatedRequest);
-    case 'Anthropic':
+    case 'anthropic':
       if (!process.env.ANTHROPIC_API_KEY) {
         throw new Error('Anthropic API key is required but not configured');
       }
       return callAnthropic(validatedRequest);
-    case 'Groq':
+    case 'groq':
       if (!process.env.GROQ_API_KEY) {
         throw new Error('Groq API key is required but not configured');
       }
       return callGroq(validatedRequest);
-    case 'Perplexity':
+    case 'perplexity':
       if (!process.env.PERPLEXITY_API_KEY) {
         throw new Error('Perplexity API key is required but not configured');
       }
