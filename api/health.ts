@@ -14,7 +14,13 @@ function getPool(): Pool | null {
       : url.includes("sslmode=require")
         ? { rejectUnauthorized: false }
         : undefined;
-    pool = new Pool({ connectionString: url, ssl: ssl as any });
+    pool = new Pool({
+      connectionString: url,
+      ssl: ssl as any,
+      max: 1,
+      connectionTimeoutMillis: 3000,
+      idleTimeoutMillis: 10000,
+    });
   }
   return pool;
 }
