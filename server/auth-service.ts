@@ -626,7 +626,7 @@ export class AuthService {
         plan: 'free',
         messageLimitPerDay: 10,
         allowedModels: [],
-        features: [],
+        features: [] as string[],
         fileUploadLimitMb: 10,
         chatHistoryEnabled: true,
         knowledgeBase: {

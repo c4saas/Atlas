@@ -1136,6 +1136,7 @@ ${file.metadata?.summary ? `\nSummary: ${file.metadata.summary}` : ''}`.trim());
           }
 
         // Send welcome email (non-blocking)
+        if (ensuredUser.email) {
         ghlEmailService.sendWelcomeEmail(ensuredUser.email, ensuredUser.firstName)
           .then(sent => {
             if (sent) {
@@ -1147,6 +1148,7 @@ ${file.metadata?.summary ? `\nSummary: ${file.metadata.summary}` : ''}`.trim());
           .catch(error => {
             console.error(`Error sending welcome email:`, error);
           });
+        }
 
         // Return user without password
         const { password: _, ...userWithoutPassword } = ensuredUser;
@@ -1426,10 +1428,11 @@ ${file.metadata?.summary ? `\nSummary: ${file.metadata.summary}` : ''}`.trim());
         merged.apiProviders = { ...merged.apiProviders };
         for (const [provider, config] of Object.entries(body.apiProviders)) {
           const existing = merged.apiProviders[provider] ?? structuredClone(defaultPlatformSettings.apiProviders[provider] ?? config);
+          const patch = (config && typeof config === 'object') ? (config as Record<string, unknown>) : {};
           merged.apiProviders[provider] = {
             ...existing,
-            ...config,
-          };
+            ...patch,
+          } as any;
         }
       }
 
@@ -1440,12 +1443,11 @@ ${file.metadata?.summary ? `\nSummary: ${file.metadata.summary}` : ''}`.trim());
       if (body.planAllowlists) {
         merged.planAllowlists = { ...merged.planAllowlists };
         for (const [tier, value] of Object.entries(body.planAllowlists)) {
-          const existing = merged.planAllowlists[tier] ?? { knowledgeBaseHosts: [] };
-          merged.planAllowlists[tier] = {
-            knowledgeBaseHosts: Array.isArray(value?.knowledgeBaseHosts)
-              ? value.knowledgeBaseHosts
-              : existing.knowledgeBaseHosts ?? [],
-          };
+          const existing = (merged.planAllowlists as any)[tier] ?? { knowledgeBaseHosts: [] as string[] };
+          const hosts = (value && typeof value === 'object' && Array.isArray((value as any).knowledgeBaseHosts))
+            ? (value as any).knowledgeBaseHosts as string[]
+            : (existing.knowledgeBaseHosts ?? []);
+          (merged.planAllowlists as any)[tier] = { knowledgeBaseHosts: hosts };
         }
       }
 
@@ -1495,7 +1497,7 @@ ${file.metadata?.summary ? `\nSummary: ${file.metadata.summary}` : ''}`.trim());
 
       // Update pricing
       const updated = await storage.upsertProviderPricing({
-        provider: item.provider,
+        provider: item.provider as any,
         model: item.model,
         inputUsdPer1k: updates.inputUsdPer1k ?? item.inputUsdPer1k,
         outputUsdPer1k: updates.outputUsdPer1k ?? item.outputUsdPer1k,
@@ -4321,9 +4323,9 @@ ${file.metadata?.summary ? `\nSummary: ${file.metadata.summary}` : ''}`.trim());
         return res.status(404).json({ error: 'Template not found' });
       }
 
-      const userPlan = await storage.getUserPlan(user.id);
+      const resolvedPlan = await authService.getResolvedPlanMetadataForUserId(user.id);
       const release = await storage.getActiveRelease().catch(() => undefined);
-      if (!isTemplateAccessibleToUser(template, userPlan, release)) {
+      if (!isTemplateAccessibleToUser(template, resolvedPlan ?? undefined, release)) {
         return res.status(404).json({ error: 'Template not available' });
       }
 
@@ -6081,7 +6083,7 @@ ${file.metadata?.summary ? `\nSummary: ${file.metadata.summary}` : ''}`.trim());
 
       const fileData = fileUploadSchema.parse(req.body);
 
-      let headResponse: Response;
+      let headResponse: globalThis.Response;
       try {
         headResponse = await fetch(fileData.fileUrl, { method: 'HEAD' });
       } catch (fetchError) {
@@ -6729,7 +6731,9 @@ ${file.metadata?.summary ? `\nSummary: ${file.metadata.summary}` : ''}`.trim());
       await storage.addTeamMember({
         teamId: invitation.teamId,
         userId,
-        role: invitation.role,
+        role: ((['owner','admin','member'] as const).includes(invitation.role as any)
+          ? (invitation.role as any)
+          : 'member'),
         status: 'active',
         invitedBy: invitation.invitedBy,
       });

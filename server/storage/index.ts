@@ -107,7 +107,8 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
 
 const mergePlatformSettingsWithDefaults = <T>(defaults: T, overrides: unknown): T => {
   if (Array.isArray(defaults)) {
-    return Array.isArray(overrides) ? structuredClone(overrides) : structuredClone(defaults);
+    const value = Array.isArray(overrides) ? structuredClone(overrides) : structuredClone(defaults);
+    return value as unknown as T;
   }
 
   if (!isPlainObject(defaults)) {
@@ -437,12 +438,12 @@ export interface IStorage {
   getTeamInvitations(teamId: string): Promise<TeamInvitation[]>;
   getUserInvitations(email: string): Promise<TeamInvitation[]>;
   createTeamInvitation(invitation: InsertTeamInvitation): Promise<TeamInvitation>;
-  updateTeamInvitation(id: string, updates: Partial<InsertTeamInvitation>): Promise<TeamInvitation | undefined>;
+  updateTeamInvitation(id: string, updates: Partial<TeamInvitation>): Promise<TeamInvitation | undefined>;
   deleteTeamInvitation(id: string): Promise<boolean>;
   deleteExpiredInvitations(): Promise<number>;
 }
 
-export class MemStorage implements IStorage {
+export class MemStorage {
   private users: Map<string, User>;
   private chats: Map<string, Chat>;
   private messages: Map<string, Message>;
@@ -458,6 +459,8 @@ export class MemStorage implements IStorage {
   private passwordResetTokensMap: Map<string, PasswordResetToken>;
   private n8nAgentsMap: Map<string, N8nAgent>;
   private n8nAgentRunsMap: Map<string, N8nAgentRun[]>;
+  private teams: Map<string, Team>;
+  private teamMembers: Map<string, TeamMember>;
   private fileStorage: InMemoryFileStorage;
   private platformSettings: PlatformSettings;
   private proCouponsMap: Map<string, ProCoupon>;
@@ -494,6 +497,8 @@ export class MemStorage implements IStorage {
     this.passwordResetTokensMap = new Map();
     this.n8nAgentsMap = new Map();
     this.n8nAgentRunsMap = new Map();
+    this.teams = new Map();
+    this.teamMembers = new Map();
     this.fileStorage = new InMemoryFileStorage();
     this.proCouponsMap = new Map();
     this.proCouponRedemptionsMap = new Map();
@@ -822,8 +827,9 @@ export class MemStorage implements IStorage {
   private cloneToolPolicy(policy: ToolPolicy): ToolPolicy {
     return {
       ...policy,
-      createdAt: new Date(policy.createdAt),
-      updatedAt: new Date(policy.updatedAt),
+      // Guard against null timestamps returned by the DB type
+      createdAt: this.parseDate(policy.createdAt) ?? new Date(0),
+      updatedAt: this.parseDate(policy.updatedAt) ?? new Date(0),
     };
   }
 
@@ -1091,9 +1097,31 @@ export class MemStorage implements IStorage {
       id,
       slug,
       tier,
-      modelsAllowed: plan.modelsAllowed || [],
-      expertsAllowed: plan.expertsAllowed || [],
-      templatesAllowed: plan.templatesAllowed || [],
+      description: plan.description ?? null,
+      allowExperts: plan.allowExperts ?? false,
+      allowTemplates: plan.allowTemplates ?? false,
+      allowModels: plan.allowModels ?? true,
+      allowKbSystem: plan.allowKbSystem ?? false,
+      allowKbOrg: plan.allowKbOrg ?? false,
+      allowKbTeam: plan.allowKbTeam ?? false,
+      allowKbUser: plan.allowKbUser ?? true,
+      allowMemory: plan.allowMemory ?? true,
+      allowAgents: plan.allowAgents ?? false,
+      allowApiAccess: plan.allowApiAccess ?? false,
+      showExpertsUpsell: plan.showExpertsUpsell ?? false,
+      showTemplatesUpsell: plan.showTemplatesUpsell ?? false,
+      showApiUpsell: plan.showApiUpsell ?? false,
+      dailyMessageLimit: plan.dailyMessageLimit ?? null,
+      maxFileSizeMb: plan.maxFileSizeMb ?? 10,
+      storageQuotaGb: plan.storageQuotaGb ?? 1,
+      isProTier: plan.isProTier ?? false,
+      isActive: plan.isActive ?? true,
+      priceMonthlyUsd: plan.priceMonthlyUsd ?? null,
+      priceAnnualUsd: plan.priceAnnualUsd ?? null,
+      // Ensure we always store mutable string[] and filter invalids
+      modelsAllowed: this.normalizeIdList((plan.modelsAllowed as string[] | null | undefined) ?? []),
+      expertsAllowed: this.normalizeIdList((plan.expertsAllowed as string[] | null | undefined) ?? []),
+      templatesAllowed: this.normalizeIdList((plan.templatesAllowed as string[] | null | undefined) ?? []),
       createdAt: now,
       updatedAt: now,
     };
@@ -1112,6 +1140,34 @@ export class MemStorage implements IStorage {
     const updatedPlan: Plan = {
       ...existingPlan,
       ...updates,
+      allowExperts: updates.allowExperts ?? existingPlan.allowExperts,
+      allowTemplates: updates.allowTemplates ?? existingPlan.allowTemplates,
+      allowModels: updates.allowModels ?? existingPlan.allowModels,
+      allowKbSystem: updates.allowKbSystem ?? existingPlan.allowKbSystem,
+      allowKbOrg: updates.allowKbOrg ?? existingPlan.allowKbOrg,
+      allowKbTeam: updates.allowKbTeam ?? existingPlan.allowKbTeam,
+      allowKbUser: updates.allowKbUser ?? existingPlan.allowKbUser,
+      allowMemory: updates.allowMemory ?? existingPlan.allowMemory,
+      allowAgents: updates.allowAgents ?? existingPlan.allowAgents,
+      allowApiAccess: updates.allowApiAccess ?? existingPlan.allowApiAccess,
+      showExpertsUpsell: updates.showExpertsUpsell ?? existingPlan.showExpertsUpsell,
+      showTemplatesUpsell: updates.showTemplatesUpsell ?? existingPlan.showTemplatesUpsell,
+      showApiUpsell: updates.showApiUpsell ?? existingPlan.showApiUpsell,
+      dailyMessageLimit: (updates.dailyMessageLimit ?? existingPlan.dailyMessageLimit) ?? null,
+      maxFileSizeMb: (updates.maxFileSizeMb ?? existingPlan.maxFileSizeMb) ?? 10,
+      storageQuotaGb: (updates.storageQuotaGb ?? existingPlan.storageQuotaGb) ?? 1,
+      isProTier: updates.isProTier ?? existingPlan.isProTier,
+      isActive: updates.isActive ?? existingPlan.isActive,
+      // Normalize array fields to concrete mutable arrays
+      modelsAllowed: this.normalizeIdList(
+        (updates.modelsAllowed as string[] | null | undefined) ?? existingPlan.modelsAllowed ?? []
+      ),
+      expertsAllowed: this.normalizeIdList(
+        (updates.expertsAllowed as string[] | null | undefined) ?? existingPlan.expertsAllowed ?? []
+      ),
+      templatesAllowed: this.normalizeIdList(
+        (updates.templatesAllowed as string[] | null | undefined) ?? existingPlan.templatesAllowed ?? []
+      ),
       slug: nextSlug,
       tier: nextTier,
       updatedAt: new Date(),
@@ -1342,7 +1398,7 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = insertUser.id ?? randomUUID();
+    const id = randomUUID();
     const planAssignment = await this.normalizeUserPlanAssignment({
       plan: insertUser.plan ?? null,
       planId: insertUser.planId ?? null,
@@ -2071,6 +2127,8 @@ export class MemStorage implements IStorage {
     const item: KnowledgeItem = {
       ...insertItem,
       id,
+      scopeId: (insertItem as any).scopeId ?? null,
+      createdBy: (insertItem as any).createdBy ?? null,
       sourceUrl: insertItem.sourceUrl || null,
       fileName: insertItem.fileName || null,
       fileType: insertItem.fileType || null,
@@ -2078,7 +2136,7 @@ export class MemStorage implements IStorage {
       metadata: insertItem.metadata || null,
       createdAt: now,
       updatedAt: now
-    };
+    } as KnowledgeItem;
     this.knowledgeItems.set(id, item);
     return item;
   }
@@ -2681,12 +2739,14 @@ export class MemStorage implements IStorage {
         const actionsSet = new Set(filters.actions);
         records = records.filter(entry => actionsSet.has(entry.action));
       }
-      if (filters.startDate) {
-        records = records.filter(entry => entry.createdAt && entry.createdAt >= filters.startDate);
-      }
-      if (filters.endDate) {
-        records = records.filter(entry => entry.createdAt && entry.createdAt <= filters.endDate);
-      }
+    if (filters.startDate) {
+      const start = filters.startDate;
+      records = records.filter(entry => entry.createdAt && entry.createdAt >= start);
+    }
+    if (filters.endDate) {
+      const end = filters.endDate;
+      records = records.filter(entry => entry.createdAt && entry.createdAt <= end);
+    }
     }
 
     // Sort by creation date, newest first
@@ -2742,7 +2802,23 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const created: AnalyticsEvent = {
       id,
-      ...event,
+      requestId: event.requestId,
+      userId: event.userId,
+      chatId: event.chatId ?? null,
+      projectId: event.projectId ?? null,
+      expertId: (event as any).expertId ?? null,
+      templateId: (event as any).templateId ?? null,
+      provider: event.provider,
+      model: event.model,
+      status: event.status,
+      errorCode: event.errorCode ?? null,
+      errorMessage: event.errorMessage ?? null,
+      inputTokens: event.inputTokens ?? 0,
+      outputTokens: event.outputTokens ?? 0,
+      totalTokens: event.totalTokens ?? 0,
+      tokensEstimated: (event as any).tokensEstimated ?? false,
+      latencyMs: event.latencyMs ?? 0,
+      costUsd: event.costUsd ?? '0',
       createdAt: new Date(),
     };
     return created;
@@ -2765,7 +2841,11 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const result: ProviderPricing = {
       id,
-      ...pricing,
+      provider: pricing.provider,
+      model: pricing.model,
+      inputUsdPer1k: pricing.inputUsdPer1k,
+      outputUsdPer1k: pricing.outputUsdPer1k,
+      enabled: pricing.enabled ?? true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -2963,7 +3043,7 @@ export class DatabaseStorage implements IStorage {
       tier,
     };
 
-    const [result] = await db.insert(plans).values(payload).returning();
+    const [result] = await db.insert(plans).values(payload as any).returning();
     return result;
   }
 
@@ -2992,7 +3072,7 @@ export class DatabaseStorage implements IStorage {
 
     const [result] = await db
       .update(plans)
-      .set(updatePayload)
+      .set(updatePayload as any)
       .where(eq(plans.id, id))
       .returning();
     return result;
@@ -3079,6 +3159,7 @@ export class DatabaseStorage implements IStorage {
       id: 'free',
       name: 'Free',
       slug: 'free',
+      tier: 'free',
       description: 'Fallback free plan',
       allowExperts: false,
       allowTemplates: false,
@@ -4763,13 +4844,9 @@ export class DatabaseStorage implements IStorage {
       conditions.push(lte(analyticsEvents.createdAt, filters.dateTo));
     }
 
-    let query = db.select().from(analyticsEvents);
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-
-    return await query.orderBy(desc(analyticsEvents.createdAt));
+    const base = db.select().from(analyticsEvents);
+    const q = conditions.length > 0 ? base.where(and(...conditions)) : base;
+    return await q.orderBy(desc(analyticsEvents.createdAt));
   }
 
   // Provider pricing methods
@@ -5008,10 +5085,11 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async updateTeamInvitation(id: string, updates: Partial<InsertTeamInvitation>): Promise<TeamInvitation | undefined> {
+  async updateTeamInvitation(id: string, updates: Partial<TeamInvitation>): Promise<TeamInvitation | undefined> {
     const [result] = await db
       .update(teamInvitations)
-      .set(updates)
+      // Allow broader update payloads like acceptedAt/status
+      .set(updates as any)
       .where(eq(teamInvitations.id, id))
       .returning();
     return result;

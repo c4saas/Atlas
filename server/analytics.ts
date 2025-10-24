@@ -341,8 +341,8 @@ export class AnalyticsTracker {
   }>> {
     try {
       const logs = await this.storage.getAdminAuditLogs({
-        dateFrom: startDate,
-        dateTo: endDate,
+        startDate,
+        endDate,
         targetUserId,
         actions: ['user.plan.changed', 'plan.modified'],
       });
