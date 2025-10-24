@@ -240,8 +240,8 @@ export class AnalyticsTracker {
     try {
       // Get analytics events within the time range
       const events = await this.storage.getAnalyticsEvents({
-        startDate,
-        endDate,
+        dateFrom: startDate,
+        dateTo: endDate,
         userId,
         provider: 'compound', // Use synthetic provider bucket for system events
       });
@@ -341,8 +341,8 @@ export class AnalyticsTracker {
   }>> {
     try {
       const logs = await this.storage.getAdminAuditLogs({
-        startDate,
-        endDate,
+        dateFrom: startDate,
+        dateTo: endDate,
         targetUserId,
         actions: ['user.plan.changed', 'plan.modified'],
       });
@@ -411,3 +411,4 @@ export async function auditPlanModification(
   const tracker = getAnalyticsTracker(storage);
   await tracker.auditPlanModification(actorUserId, changes);
 }
+

@@ -735,7 +735,7 @@ export class AuthService {
     const limits = await this.getUserLimits(userId);
     const settingsRecord = await this.storage.getPlatformSettings();
     const settings = structuredClone(settingsRecord.data);
-    const planKey = limits.plan;
+    const planKey: 'free' | 'pro' | 'enterprise' = (['free','pro','enterprise'] as const).includes(limits.plan as any) ? (limits.plan as 'free'|'pro'|'enterprise') : 'free';
     
     // Get user's plan metadata for additional settings
     const resolvedPlan = await this.resolvePlanForUserId(userId);
@@ -874,7 +874,8 @@ export class AuthService {
         allowed: [...expandedAllowedModels],
         legacy: [...(limits.legacyModels ?? [])],
       },
-      features: [...limits.features],
+      // Using structured features object from coreCapabilities above
+
       featureFlags,
       modules: {
         knowledgeBase: structuredClone(limits.knowledgeBase),
@@ -961,7 +962,7 @@ export class AuthService {
     return this.requireAdminGuard(req, res, next);
   }
 
-  createRoleGuard(allowedRoles: User['role'][]): RequestHandler {
+  createRoleGuard(allowedRoles: ('user'|'admin'|'super_admin')[]): RequestHandler {
     return requireRole(allowedRoles, this.storage);
   }
 
@@ -1003,3 +1004,6 @@ declare module 'express-serve-static-core' {
     resolvedPlan?: ResolvedPlanMetadata;
   }
 }
+
+
+

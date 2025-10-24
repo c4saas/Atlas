@@ -666,6 +666,7 @@ export class MemStorage implements IStorage {
         id: randomUUID(),
         name: 'Free',
         slug: 'free',
+        tier: 'free',
         description: 'Get started with basic features',
         allowExperts: false,
         allowTemplates: false,
@@ -697,6 +698,7 @@ export class MemStorage implements IStorage {
         id: randomUUID(),
         name: 'Pro',
         slug: 'pro',
+        tier: 'pro',
         description: 'Full access to experts and templates',
         allowExperts: true,
         allowTemplates: true,
@@ -733,6 +735,7 @@ export class MemStorage implements IStorage {
         id: randomUUID(),
         name: 'Enterprise',
         slug: 'enterprise',
+        tier: 'enterprise',
         description: 'Complete platform access with all features',
         allowExperts: true,
         allowTemplates: true,
@@ -3793,16 +3796,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async listN8nAgentRuns(agentId: string, limit?: number): Promise<N8nAgentRun[]> {
-    let builder = db
+    const base = db
       .select()
       .from(n8nAgentRuns)
       .where(eq(n8nAgentRuns.agentId, agentId));
 
-    if (typeof limit === 'number' && Number.isFinite(limit) && limit >= 0) {
-      builder = builder.limit(Math.floor(limit));
-    }
+    const query = typeof limit === 'number' && Number.isFinite(limit) && limit >= 0
+      ? base.limit(Math.floor(limit)).orderBy(desc(n8nAgentRuns.createdAt))
+      : base.orderBy(desc(n8nAgentRuns.createdAt));
 
-    return await builder.orderBy(desc(n8nAgentRuns.createdAt));
+    return await query;
   }
 
   // File methods
@@ -4666,16 +4669,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async listAdminAuditLogsForUser(userId: string, limit?: number): Promise<AdminAuditLog[]> {
-    let builder = db
+    const base = db
       .select()
       .from(adminAuditLogs)
       .where(eq(adminAuditLogs.targetUserId, userId));
 
-    if (typeof limit === 'number') {
-      builder = builder.limit(Math.max(0, limit));
-    }
+    const query = typeof limit === 'number'
+      ? base.limit(Math.max(0, limit)).orderBy(desc(adminAuditLogs.createdAt))
+      : base.orderBy(desc(adminAuditLogs.createdAt));
 
-    return await builder.orderBy(desc(adminAuditLogs.createdAt));
+    return await query;
   }
 
   async getAdminAuditLogs(filters?: {
@@ -4708,19 +4711,17 @@ export class DatabaseStorage implements IStorage {
       conditions.push(lte(adminAuditLogs.createdAt, filters.endDate));
     }
 
-    let builder = db
-      .select()
-      .from(adminAuditLogs);
+    const base = (
+      conditions.length > 0
+        ? db.select().from(adminAuditLogs).where(and(...conditions))
+        : db.select().from(adminAuditLogs)
+    );
 
-    if (conditions.length > 0) {
-      builder = builder.where(and(...conditions));
-    }
+    const query = filters?.limit && filters.limit > 0
+      ? base.limit(filters.limit).orderBy(desc(adminAuditLogs.createdAt))
+      : base.orderBy(desc(adminAuditLogs.createdAt));
 
-    if (filters?.limit && filters.limit > 0) {
-      builder = builder.limit(filters.limit);
-    }
-
-    return await builder.orderBy(desc(adminAuditLogs.createdAt));
+    return await query;
   }
 
   // Analytics event methods
@@ -4866,7 +4867,26 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createTeam(team: InsertTeam): Promise<Team> {
-    const [result] = await db.insert(teams).values(team).returning();
+    const payload: typeof teams.$inferInsert = {
+      name: team.name,
+      ownerId: team.ownerId,
+      description: team.description ?? null,
+      settings: team.settings == null
+        ? null
+        : {
+            customInstructions: typeof (team.settings as any).customInstructions === 'string'
+              ? (team.settings as any).customInstructions
+              : undefined,
+            storageQuotaMb: typeof (team.settings as any).storageQuotaMb === 'number'
+              ? (team.settings as any).storageQuotaMb
+              : undefined,
+            apiUsageLimit: typeof (team.settings as any).apiUsageLimit === 'number'
+              ? (team.settings as any).apiUsageLimit
+              : undefined,
+          },
+    } as any;
+
+    const [result] = await db.insert(teams).values(payload).returning();
     // Automatically add owner as a team member
     await this.addTeamMember({
       teamId: result.id,
