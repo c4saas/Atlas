@@ -1,7 +1,7 @@
-import { db } from "./db";
+import { db } from "./db.js";
 import { releases, outputTemplates } from "../shared/schema.js";
 import { eq } from "drizzle-orm";
-import { log } from "./vite";
+import { log } from "./vite.js";
 
 export async function ensureActiveReleaseHasTemplates(): Promise<void> {
   try {

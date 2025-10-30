@@ -3,8 +3,8 @@ import path from "node:path";
 
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 
-import { db, pool } from "./db";
-import { log } from "./vite";
+import { db, pool } from "./db.js";
+import { log } from "./vite.js";
 
 const MIGRATIONS_SCOPE = "migrations";
 const FALLBACK_MIGRATIONS_TABLE = "atlas_migrations";

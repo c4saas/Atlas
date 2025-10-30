@@ -1,9 +1,9 @@
 import express, { type Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import { runMigrations, verifyDatabaseConnection } from "./migrations";
-import { ensureActiveReleaseHasTemplates } from "./release-init";
+import { registerRoutes } from "./routes.js";
+import { setupVite, serveStatic, log } from "./vite.js";
+import { runMigrations, verifyDatabaseConnection } from "./migrations.js";
+import { ensureActiveReleaseHasTemplates } from "./release-init.js";
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
