@@ -29,7 +29,7 @@ import {
   projects, projectKnowledge, projectFiles, passwordResetTokens, userApiKeys, platformSettings, n8nAgents, n8nAgentRuns,
   proCoupons, proCouponRedemptions, templates, outputTemplates, adminAuditLogs, systemPrompts, releases, experts, toolPolicies,
   analyticsEvents, providerPricing, teams, teamMembers, teamInvitations, plans, models
-} from "@shared/schema";
+} from "../../shared/schema.js";
 import { randomUUID } from "crypto";
 import { nanoid } from "nanoid";
 import { db } from "../db";

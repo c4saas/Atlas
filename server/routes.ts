@@ -14,7 +14,7 @@ import type {
   Model,
   InsertModel,
   UpdateModel,
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { createServer, type Server } from "http";
 import { randomUUID, randomBytes } from "crypto";
 import { storage as defaultStorage } from "./storage/index.js";
@@ -55,7 +55,7 @@ import {
   releaseTransitionSchema,
   insertModelSchema,
   updateModelSchema,
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { z } from "zod";
 import { GoogleDriveService } from "./google-drive.js";
 import { AIService } from "./ai-service.js";

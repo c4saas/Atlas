@@ -21,7 +21,8 @@ async function init() {
     }
     await verifyDatabaseConnection();
   } catch (err) {
-    console.warn("Serverless DB init warning:", (err as Error)?.message);
+    const message = (err as Error)?.message ?? 'unknown error';
+    console.warn("[api/_server] DB init warning:", message);
   }
 
   app = instance;
@@ -29,8 +30,26 @@ async function init() {
 
 export async function getServerApp() {
   if (!initPromise) {
+    // Surface environment for debugging without leaking secrets
+    const redactedDb = (process.env.DATABASE_URL || '').replace(/:\w+@/, ':***@');
+    console.log('[api/_server] init start', {
+      nodeEnv: process.env.NODE_ENV,
+      hasSessionSecret: Boolean(process.env.SESSION_SECRET),
+      hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+      databaseUrlHost: redactedDb ? new URL(redactedDb).host : undefined,
+    });
+
+    // Global guards
+    process.on('unhandledRejection', (reason: any) => {
+      console.error('[api/_server] unhandledRejection', reason?.message || reason);
+    });
+    process.on('uncaughtException', (err) => {
+      console.error('[api/_server] uncaughtException', err?.message || err);
+    });
+
     initPromise = init().catch((e) => {
       initPromise = null;
+      console.error('[api/_server] init failed', (e as Error)?.message || e);
       throw e;
     });
   }
