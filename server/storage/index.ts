@@ -32,7 +32,7 @@ import {
 } from "../../shared/schema.js";
 import { randomUUID } from "crypto";
 import { nanoid } from "nanoid";
-import { db } from "../db";
+import { db } from "../db.js";
 import { DEFAULT_SYSTEM_PROMPT } from "../system-prompts";
 import { eq, and, gte, lte, desc, asc, sql, inArray, ne, lt, or, isNull } from "drizzle-orm";
 import {
