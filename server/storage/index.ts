@@ -41,7 +41,7 @@ import {
   type FileStorageAdapter,
   InMemoryFileStorage,
 } from "./file-store.js";
-import { encryptSecret, decryptSecret } from "../security/secret-storage";
+import { encryptSecret, decryptSecret } from "../security/secret-storage.js";
 
 export type StoredFile = FileRecord;
 
