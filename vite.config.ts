@@ -46,22 +46,8 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Revert to Vite default chunking to avoid chunk-order edge cases on static hosting
     chunkSizeWarningLimit: 1500,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (!id.includes("node_modules")) return undefined;
-          if (id.includes("react") || id.includes("react-dom")) return "react";
-          if (id.includes("@radix-ui")) return "radix";
-          if (id.includes("recharts")) return "recharts";
-          if (id.includes("xlsx")) return "xlsx";
-          if (id.includes("tesseract.js")) return "tesseract";
-          if (id.includes("pdf-parse") || /[\\\/]pdfjs-dist[\\\/]/.test(id)) return "pdf";
-          if (id.includes("framer-motion") || id.includes("lucide-react")) return "ui";
-          return "vendor";
-        },
-      },
-    },
   },
   server: {
     fs: {
