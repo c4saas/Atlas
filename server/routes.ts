@@ -72,7 +72,7 @@ import { ensureAdminRole } from "./security/admin.js";
 import { attachCsrfToken, verifyCsrfToken } from "./security/csrf.js";
 import { secureCompare, generateCsrfToken } from "./security/secure-compare.js";
 import { requirePermission, requireAnyPermission } from "./security/permissions.js";
-import { PERMISSIONS } from "@shared/constants";
+import { PERMISSIONS } from "../shared/constants.js";
 import { getModelConfig } from "./ai-models.js";
 import { buildUsageSummary } from "./usage/analytics.js";
 import { buildOutputTemplateInstruction, validateOutputTemplateContent } from "./output-template-utils.js";
