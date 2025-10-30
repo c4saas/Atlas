@@ -40,7 +40,7 @@ import {
   type FileRecord,
   type FileStorageAdapter,
   InMemoryFileStorage,
-} from "./file-store";
+} from "./file-store.js";
 import { encryptSecret, decryptSecret } from "../security/secret-storage";
 
 export type StoredFile = FileRecord;

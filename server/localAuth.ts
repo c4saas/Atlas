@@ -6,9 +6,9 @@ import createMemoryStore from "memorystore";
 import bcrypt from "bcryptjs";
 import type { Express, RequestHandler } from "express";
 import connectPg from "connect-pg-simple";
-import { storage } from "./storage";
+import { storage } from "./storage/index.js";
 import type { User } from "@shared/schema";
-import { pool } from "./db";
+import { pool } from "./db.js";
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week

@@ -19,7 +19,7 @@ import { createServer, type Server } from "http";
 import { randomUUID, randomBytes } from "crypto";
 import { storage as defaultStorage } from "./storage/index.js";
 import type { IStorage } from "./storage/index.js";
-import { fileAnalysisService } from "./file-analysis";
+import { fileAnalysisService } from "./file-analysis.js";
 import {
   insertChatSchema,
   insertMessageSchema,
@@ -57,26 +57,26 @@ import {
   updateModelSchema,
 } from "@shared/schema";
 import { z } from "zod";
-import { GoogleDriveService } from "./google-drive";
-import { AIService } from "./ai-service";
-import { AuthService, CouponRedemptionError, type ResolvedPlanMetadata } from "./auth-service";
-import { setupAuth, isAuthenticated } from "./localAuth";
+import { GoogleDriveService } from "./google-drive.js";
+import { AIService } from "./ai-service.js";
+import { AuthService, CouponRedemptionError, type ResolvedPlanMetadata } from "./auth-service.js";
+import { setupAuth, isAuthenticated } from "./localAuth.js";
 import passport from "passport";
-import { transcribeAudio } from "./groq-whisper";
-import { checkNotionConnection, getNotionDatabases, getNotionPages, NOTION_NOT_CONNECTED_ERROR } from "./notion-service";
-import { ghlEmailService } from "./ghl-email";
-import { FileQuotaExceededError } from "./storage/file-store";
-import { createRateLimiter } from "./rate-limit";
-import { fetchWithSsrfProtection, UnsafeRemoteURLError } from "./security/safe-fetch";
-import { ensureAdminRole } from "./security/admin";
-import { attachCsrfToken, verifyCsrfToken } from "./security/csrf";
-import { secureCompare, generateCsrfToken } from "./security/secure-compare";
-import { requirePermission, requireAnyPermission } from "./security/permissions";
+import { transcribeAudio } from "./groq-whisper.js";
+import { checkNotionConnection, getNotionDatabases, getNotionPages, NOTION_NOT_CONNECTED_ERROR } from "./notion-service.js";
+import { ghlEmailService } from "./ghl-email.js";
+import { FileQuotaExceededError } from "./storage/file-store.js";
+import { createRateLimiter } from "./rate-limit.js";
+import { fetchWithSsrfProtection, UnsafeRemoteURLError } from "./security/safe-fetch.js";
+import { ensureAdminRole } from "./security/admin.js";
+import { attachCsrfToken, verifyCsrfToken } from "./security/csrf.js";
+import { secureCompare, generateCsrfToken } from "./security/secure-compare.js";
+import { requirePermission, requireAnyPermission } from "./security/permissions.js";
 import { PERMISSIONS } from "@shared/constants";
-import { getModelConfig } from "./ai-models";
-import { buildUsageSummary } from "./usage/analytics";
-import { buildOutputTemplateInstruction, validateOutputTemplateContent } from "./output-template-utils";
-import { MIGRATION_GUIDANCE_MESSAGE, isUndefinedTableError } from "./storage/errors";
+import { getModelConfig } from "./ai-models.js";
+import { buildUsageSummary } from "./usage/analytics.js";
+import { buildOutputTemplateInstruction, validateOutputTemplateContent } from "./output-template-utils.js";
+import { MIGRATION_GUIDANCE_MESSAGE, isUndefinedTableError } from "./storage/errors.js";
 import {
   trackFeatureBlocked,
   trackFeatureUsed,
@@ -84,8 +84,8 @@ import {
   type FeatureContext,
   type FeaturePlanContext,
   type PlanChangeSnapshot,
-} from "./analytics";
-import { resolvePlanByIdentifier } from "./plans/plan-registry";
+} from "./analytics.js";
+import { resolvePlanByIdentifier } from "./plans/plan-registry.js";
 
 const FREE_MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const PRO_MAX_UPLOAD_BYTES = 25 * 1024 * 1024;

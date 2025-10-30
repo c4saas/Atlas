@@ -7,8 +7,14 @@ import { type Server } from "http";
 // Same for vite config; only needed during development.
 import { nanoid } from "nanoid";
 
-let viteLogger: { error: (msg: string, options?: any) => void } = {
-  error: (msg) => console.error(msg),
+// Loose logger placeholder to satisfy types in production builds
+let viteLogger: any = {
+  info: (...args: any[]) => console.log(...args),
+  warn: (...args: any[]) => console.warn(...args),
+  warnOnce: (...args: any[]) => console.warn(...args),
+  error: (...args: any[]) => console.error(...args),
+  clearScreen: () => {},
+  hasWarned: false,
 };
 
 export function log(message: string, source = "express") {
@@ -35,13 +41,14 @@ export async function setupVite(app: Express, server: Server) {
   const vite = await createViteServer({
     ...viteConfig,
     configFile: false,
-    customLogger: {
+    // Cast to any to avoid pulling vite types into prod builds
+    customLogger: ({
       ...viteLogger,
-      error: (msg, options) => {
+      error: (msg: any, options: any) => {
         viteLogger.error(msg, options);
         process.exit(1);
       },
-    },
+    }) as any,
     server: serverOptions,
     appType: "custom",
   });

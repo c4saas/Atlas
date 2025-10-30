@@ -1,12 +1,12 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import Groq from 'groq-sdk';
-import { getModelConfig, ModelConfig } from './ai-models';
-import { performWebSearch } from './web-search';
+import { getModelConfig, ModelConfig } from './ai-models.js';
+import { performWebSearch } from './web-search.js';
 import type { UserPreferences, Message, ToolPolicy } from '@shared/schema';
-import { IStorage } from './storage';
-import { assembleRequest } from './prompt-engine';
-import { generateRequestId, estimateMessagesTokens, calculateCost } from './analytics-utils';
+import { IStorage } from './storage/index.js';
+import { assembleRequest } from './prompt-engine.js';
+import { generateRequestId, estimateMessagesTokens, calculateCost } from './analytics-utils.js';
 
 export interface ChatCompletionRequest {
   messages: Array<{

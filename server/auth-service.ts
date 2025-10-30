@@ -12,10 +12,10 @@ import {
   type ProCoupon,
   type User,
 } from '@shared/schema';
-import { IStorage } from './storage';
-import { ensureAdminRole, isAdminUser } from './security/admin';
-import { requireRole } from './security/roles';
-import { secureCompare } from './security/secure-compare';
+import { IStorage } from './storage/index.js';
+import { ensureAdminRole, isAdminUser } from './security/admin.js';
+import { requireRole } from './security/roles.js';
+import { secureCompare } from './security/secure-compare.js';
 
 type CouponErrorCode =
   | 'PRO_COUPON_INVALID'
