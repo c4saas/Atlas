@@ -8,8 +8,12 @@ function isSafeMethod(method: string): boolean {
 }
 
 export function attachCsrfToken(req: Request, res: Response, next: NextFunction) {
+  // Be lenient: if session middleware isn't available for this request
+  // (e.g., static asset, health check, or early server boot), just continue
+  // without setting a CSRF cookie. Non-GET modifying requests are still
+  // protected by verifyCsrfToken below.
   if (!req.session) {
-    return next(new Error('Session store is not configured'));
+    return next();
   }
 
   if (!req.session.csrfToken) {
