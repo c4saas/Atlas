@@ -1,7 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import { registerRoutes } from "../server/routes";
-import { runMigrations, verifyDatabaseConnection } from "../server/migrations";
+import { registerRoutes } from "../server/routes.js";
+import { runMigrations, verifyDatabaseConnection } from "../server/migrations.js";
 
 let app: ReturnType<typeof express> | null = null;
 let initPromise: Promise<void> | null = null;
@@ -38,4 +38,3 @@ export async function getServerApp() {
   if (!app) throw new Error("API not initialized");
   return app;
 }
-
