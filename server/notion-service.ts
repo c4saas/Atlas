@@ -1,5 +1,5 @@
 import { Client } from '@notionhq/client';
-import { storage } from './storage';
+import { storage } from './storage/index.js';
 
 const NOTION_NOT_CONNECTED_ERROR = 'Notion not connected';
 

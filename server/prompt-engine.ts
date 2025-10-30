@@ -1,5 +1,5 @@
 import type { Message as StoredMessage } from '../shared/schema.js';
-import type { IStorage } from './storage';
+import type { IStorage } from './storage/index.js';
 import { DEFAULT_SYSTEM_PROMPT } from './system-prompts';
 
 export type PromptLayerRole = 'system' | 'user' | 'assistant';

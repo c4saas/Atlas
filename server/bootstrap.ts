@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import type { IStorage } from './storage';
+import type { IStorage } from './storage/index.js';
 
 export async function ensureSupportUserFromEnv(storage: IStorage) {
   const email = process.env.SUPPORT_USER_EMAIL;
@@ -45,4 +45,3 @@ export async function ensureSupportUserFromEnv(storage: IStorage) {
     console.log(`[bootstrap] Created support user ${normalizedEmail} (role=${role}, plan=${plan}).`);
   }
 }
-
