@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { generateCsrfToken } from './secure-compare';
+import { generateCsrfToken } from './secure-compare.js';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS', 'TRACE']);
 
