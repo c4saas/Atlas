@@ -33,7 +33,7 @@ import {
 import { randomUUID } from "crypto";
 import { nanoid } from "nanoid";
 import { db } from "../db.js";
-import { DEFAULT_SYSTEM_PROMPT } from "../system-prompts";
+import { DEFAULT_SYSTEM_PROMPT } from "../system-prompts.js";
 import { eq, and, gte, lte, desc, asc, sql, inArray, ne, lt, or, isNull } from "drizzle-orm";
 import {
   createFileStorage,
