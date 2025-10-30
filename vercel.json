@@ -3,10 +3,6 @@
   "outputDirectory": "dist/public",
   "rewrites": [
     { "source": "/health", "destination": "/api/health" },
-    // Only rewrite HTML routes for the SPA. Do not rewrite static assets.
-    {
-      "source": "/((?!api/|assets/|favicon\\.ico|robots\\.txt|manifest.*|.*\\.(?:js|css|map|png|jpg|jpeg|gif|svg|ico|json|txt|webp|woff|woff2|ttf|otf)).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
