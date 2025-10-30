@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { releases, outputTemplates } from "@shared/schema";
+import { releases, outputTemplates } from "../shared/schema.js";
 import { eq } from "drizzle-orm";
 import { log } from "./vite";
 

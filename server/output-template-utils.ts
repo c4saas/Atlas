@@ -1,4 +1,4 @@
-import { OutputTemplate, OutputTemplateValidation } from '@shared/schema';
+import { OutputTemplate, OutputTemplateValidation } from '../shared/schema.js';
 
 const BOLD_WRAPPER_PATTERN = String.raw`(?:\*\*|__)`;
 

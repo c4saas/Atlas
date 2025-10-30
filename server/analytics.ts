@@ -1,5 +1,5 @@
-import type { IStorage } from "./storage";
-import type { InsertAnalyticsEvent, InsertAdminAuditLog } from "@shared/schema";
+import type { IStorage } from "./storage/index.js";
+import type { InsertAnalyticsEvent, InsertAdminAuditLog } from "../shared/schema.js";
 import { nanoid } from "nanoid";
 
 /**

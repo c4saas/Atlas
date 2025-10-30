@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import * as schema from "@shared/schema";
+import * as schema from "../shared/schema.js";
 import fs from 'fs';
 import { EMBEDDED_DATABASE_URL } from './db-embedded';
 

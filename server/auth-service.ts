@@ -11,7 +11,7 @@ import {
   type PlanAllowlistConfig,
   type ProCoupon,
   type User,
-} from '@shared/schema';
+} from '../shared/schema.js';
 import { IStorage } from './storage/index.js';
 import { ensureAdminRole, isAdminUser } from './security/admin.js';
 import { requireRole } from './security/roles.js';

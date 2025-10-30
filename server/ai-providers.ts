@@ -1,9 +1,9 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
-import { getModelById } from '@shared/schema';
+import { getModelById } from '../shared/schema.js';
 import { z } from 'zod';
-import { performWebSearch } from './web-search';
-import { getModelConfig } from './ai-models';
+import { performWebSearch } from './web-search.js';
+import { getModelConfig } from './ai-models.js';
 
 // Initialize AI clients
 const openai = new OpenAI({

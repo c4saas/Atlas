@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express';
-import type { UserRole } from '@shared/schema';
+import type { UserRole } from '../../shared/schema.js';
 import type { IStorage } from '../storage';
 import { ensureAdminRole } from './admin';
 

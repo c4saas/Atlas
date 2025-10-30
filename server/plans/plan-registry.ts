@@ -1,4 +1,4 @@
-import type { Plan } from '@shared/schema';
+import type { Plan } from '../../shared/schema.js';
 import type { IStorage } from '../storage';
 
 export interface PlanPriceMapping {

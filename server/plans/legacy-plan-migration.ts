@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import type { db } from '../db';
-import { plans, users, type Plan, type User } from '@shared/schema';
+import { plans, users, type Plan, type User } from '../../shared/schema.js';
 
 export interface PlanLookup {
   plansById: Map<string, Plan>;

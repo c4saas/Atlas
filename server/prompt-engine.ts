@@ -1,4 +1,4 @@
-import type { Message as StoredMessage } from '@shared/schema';
+import type { Message as StoredMessage } from '../shared/schema.js';
 import type { IStorage } from './storage';
 import { DEFAULT_SYSTEM_PROMPT } from './system-prompts';
 

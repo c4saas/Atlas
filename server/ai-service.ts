@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import Groq from 'groq-sdk';
 import { getModelConfig, ModelConfig } from './ai-models.js';
 import { performWebSearch } from './web-search.js';
-import type { UserPreferences, Message, ToolPolicy } from '@shared/schema';
+import type { UserPreferences, Message, ToolPolicy } from '../shared/schema.js';
 import { IStorage } from './storage/index.js';
 import { assembleRequest } from './prompt-engine.js';
 import { generateRequestId, estimateMessagesTokens, calculateCost } from './analytics-utils.js';

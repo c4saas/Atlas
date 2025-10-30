@@ -1,5 +1,5 @@
 import { startOfDay } from 'date-fns';
-import type { UsageMetric } from '@shared/schema';
+import type { UsageMetric } from '../../shared/schema.js';
 import {
   estimateCostForModel,
   UsageSummary,
