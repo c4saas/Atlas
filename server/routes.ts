@@ -17,8 +17,8 @@ import type {
 } from "@shared/schema";
 import { createServer, type Server } from "http";
 import { randomUUID, randomBytes } from "crypto";
-import { storage as defaultStorage } from "./storage";
-import type { IStorage } from "./storage";
+import { storage as defaultStorage } from "./storage/index.js";
+import type { IStorage } from "./storage/index.js";
 import { fileAnalysisService } from "./file-analysis";
 import {
   insertChatSchema,
