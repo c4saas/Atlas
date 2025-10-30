@@ -1,17 +1,17 @@
 import type { RequestHandler } from 'express';
 import type { UserRole } from '../../shared/schema.js';
-import type { IStorage } from '../storage';
+import type { IStorage } from '../storage/index.js';
 import { ensureAdminRole } from './admin';
 
 let cachedStorage: IStorage | null = null;
 
 async function resolveStorage(): Promise<IStorage> {
   if (cachedStorage) {
-    return cachedStorage;
+    return cachedStorage as IStorage;
   }
-  const module = await import('../storage');
-  cachedStorage = module.storage;
-  return cachedStorage;
+  const module = await import('../storage/index.js');
+  cachedStorage = (module as any).storage;
+  return cachedStorage as IStorage;
 }
 
 export function requireRole(

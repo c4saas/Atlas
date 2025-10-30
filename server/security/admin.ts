@@ -1,5 +1,5 @@
 import type { User } from '../../shared/schema.js';
-import type { IStorage } from '../storage';
+import type { IStorage } from '../storage/index.js';
 
 export async function ensureAdminRole<T extends Pick<User, 'role' | 'id' | 'email'>>(
   user: T | undefined | null,

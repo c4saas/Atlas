@@ -1,5 +1,5 @@
 import type { Plan } from '../../shared/schema.js';
-import type { IStorage } from '../storage';
+import type { IStorage } from '../storage/index.js';
 
 export interface PlanPriceMapping {
   [priceId: string]: string;

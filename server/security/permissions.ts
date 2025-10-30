@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
-import { IStorage } from '../storage';
-import { storage as defaultStorage } from '../storage';
+import { IStorage } from '../storage/index.js';
+import { storage as defaultStorage } from '../storage/index.js';
 import { ROLE_PERMISSIONS, Permission } from '../../shared/constants.js';
 
 export function requirePermission(
