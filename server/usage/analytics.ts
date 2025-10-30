@@ -6,7 +6,7 @@ import {
   UsageSummaryDailyUsage,
   UsageSummaryModelBreakdown,
   UsageSummaryTotals,
-} from '@shared/usage';
+} from '../../shared/usage.js';
 
 function parseTokens(value?: string | null): number {
   if (!value) return 0;
