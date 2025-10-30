@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 
 // Reuse the existing Express routes from the server codebase
 import { registerRoutes } from "../server/routes";
+import { runMigrations, verifyDatabaseConnection } from "../server/migrations";
 
 let app: ReturnType<typeof express> | null = null;
 let initPromise: Promise<void> | null = null;
@@ -18,6 +19,16 @@ async function initApp() {
 
   // Mount all API routes and middleware
   await registerRoutes(instance);
+
+  // Best-effort: ensure DB schema exists in serverless cold start
+  try {
+    if (process.env.SKIP_DB_MIGRATIONS !== "true") {
+      await runMigrations();
+    }
+    await verifyDatabaseConnection();
+  } catch (err) {
+    console.warn("Serverless DB init warning:", (err as Error)?.message);
+  }
 
   app = instance;
   console.log("Vercel serverless API initialized");
