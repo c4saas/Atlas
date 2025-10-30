@@ -2,6 +2,8 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import { registerRoutes } from "../server/routes.js";
 import { runMigrations, verifyDatabaseConnection } from "../server/migrations.js";
+import { storage } from "../server/storage/index.js";
+import { ensureSupportUserFromEnv } from "../server/bootstrap.js";
 
 let app: ReturnType<typeof express> | null = null;
 let initPromise: Promise<void> | null = null;
@@ -20,6 +22,12 @@ async function init() {
       await runMigrations();
     }
     await verifyDatabaseConnection();
+    // Optional: seed/update a support admin user from env (if provided)
+    try {
+      await ensureSupportUserFromEnv(storage as any);
+    } catch (seedErr) {
+      console.warn("[api/_server] support user seed skipped:", (seedErr as Error)?.message ?? seedErr);
+    }
   } catch (err) {
     const message = (err as Error)?.message ?? 'unknown error';
     console.warn("[api/_server] DB init warning:", message);

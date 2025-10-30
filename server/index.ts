@@ -4,6 +4,8 @@ import { registerRoutes } from "./routes.js";
 import { setupVite, serveStatic, log } from "./vite.js";
 import { runMigrations, verifyDatabaseConnection } from "./migrations.js";
 import { ensureActiveReleaseHasTemplates } from "./release-init.js";
+import { storage } from "./storage/index.js";
+import { ensureSupportUserFromEnv } from "./bootstrap.js";
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -90,6 +92,12 @@ app.use((req, res, next) => {
         await runMigrations();
         await verifyDatabaseConnection();
         await ensureActiveReleaseHasTemplates();
+        // Seed/update support user from env if provided
+        try {
+          await ensureSupportUserFromEnv(storage as any);
+        } catch (seedErr) {
+          log(`Support user seed skipped: ${(seedErr as Error).message}`);
+        }
         isReady = true;
         log('Background initialization complete - server ready');
       } catch (error) {

@@ -23,10 +23,14 @@ No routes/code were removed – local development remains unchanged.
    - Build Command: `npm run build`
    - Output Directory: `dist/public`
 3. In Vercel Project Settings → Environment Variables, configure values from `.env.example`:
-   - Required: `SESSION_SECRET`, `DATABASE_URL`
-   - Recommended: `API_KEY_ENCRYPTION_KEY`
-   - Optional provider keys: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, etc.
-   - Optional: `SKIP_DB_MIGRATIONS` (defaults to false)
+- Required: `SESSION_SECRET`, `DATABASE_URL`
+- Recommended: `API_KEY_ENCRYPTION_KEY`
+- Optional provider keys: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GROQ_API_KEY`, etc.
+- Optional: `SKIP_DB_MIGRATIONS` (defaults to false)
+
+Seeding an admin user (optional during first deploy):
+
+- `SUPPORT_USER_EMAIL` and `SUPPORT_USER_PASSWORD` can be set to automatically create/update a support admin account on cold start. Optionally set `SUPPORT_USER_ROLE` (`super_admin` by default) and `SUPPORT_USER_PLAN` (`pro` by default if available).
 
 Notes:
 

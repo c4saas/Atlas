@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import type { UserRole } from '../../shared/schema.js';
 import type { IStorage } from '../storage/index.js';
-import { ensureAdminRole } from './admin';
+import { ensureAdminRole } from './admin.js';
 
 let cachedStorage: IStorage | null = null;
 

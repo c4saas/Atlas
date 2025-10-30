@@ -1,1 +1,1 @@
-export { DEFAULT_SYSTEM_PROMPT } from '../shared/constants';
+export { DEFAULT_SYSTEM_PROMPT } from '../shared/constants.js';
